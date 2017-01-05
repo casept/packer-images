@@ -1,7 +1,9 @@
+# -*- mode: ruby -*-                                                                                                           
+# vi: set ft=ruby :
+
 Vagrant.configure("2") do |config|
     config.vm.define "vagrant-ubuntu"
-    config.vm.box = "ubuntu1310"
-    config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/saucy/current/saucy-server-cloudimg-amd64-vagrant-disk1.box"
+    config.vm.box = "ubuntu/xenial64"
  
     config.vm.provider :virtualbox do |v, override|
         v.customize ["modifyvm", :id, "--memory", 2048]
@@ -21,4 +23,25 @@ Vagrant.configure("2") do |config|
         v.vmx["RemoteDisplay.vnc.enabled"] = "false"
         v.vmx["RemoteDisplay.vnc.port"] = "5900"
     end
+
+
+	#Copy the files needed to build the floppy
+	config.vm.provision "file", source: "../../templates/windows-2003R2-serverenterprise-amd64/winnt.sif", destination: "~/winnt.sif"
+	config.vm.provision "file", source: "../regedit.bat", destination: "~/regedit.bat"
+	config.vm.provision "file", source: "../runonce.bat", destination: "~/runonce.bat"
+	config.vm.provision "file", source: "../install-cygwin-sshd.bat", destination: "~/install-cygwin-sshd.bat"
+	config.vm.provision "file", source: "../ps.bat", destination: "~/ps.bat"
+	config.vm.provision "file", source: "../downloadFile.vbs", destination: "~/downloadFile.vbs"
+	config.vm.provision "file", source: "../vagrant-ssh.bat", destination: "~/vagrant-ssh.bat"
+	config.vm.provision "file", source: "../oracle-cert.cer", destination: "~/oracle-cert.cer"
+	config.vm.provision "file", source: "../winrm.bat", destination: "~/winrm.bat"
+
+	#Allow more than 5 login attempts via SSH. See https://superuser.com/questions/187779/too-many-authentication-failures-for-username for more info.
+	config.vm.provision "shell", inline: <<-SHELL
+	#Add missing newline to the config file. This currently requires the GNU bash implementation of echo. 
+	echo -en "\n" >> /etc/ssh/sshd_config 
+	echo "MaxAuthTries 999" >> /etc/ssh/sshd_config
+	service ssh reload
+	SHELL
+	
 end

@@ -6,3 +6,4 @@
 *.box
 **/output-virtualbox-iso/
 **/output-vmware-iso/
+*-console.log
